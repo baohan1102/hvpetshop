@@ -15,12 +15,12 @@
 /node_modules
 /public/build
 /public/hot
-
-!/storage/*.key
-!/storage/pail
+/storage/*.key
+/storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
-".env" 
-".env" 
+storage/app/public/
+!storage/app/public/products/
+!storage/app/public/products/**

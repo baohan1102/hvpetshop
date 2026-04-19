@@ -32,25 +32,17 @@ class SanPham extends Model
         return $this->danhGias()->where('da_duyet', true)->count();
     }
 
-   public function getHinhAnhUrlAttribute()
+public function getHinhAnhUrlAttribute()
 {
     if ($this->hinh_anh) {
-        // Thử các đường dẫn khác nhau
-        $paths = [
-            public_path('storage/' . $this->hinh_anh),
-            public_path('storage/products/' . basename($this->hinh_anh)),
-        ];
-        
-        foreach ($paths as $path) {
-            if (file_exists($path)) {
-                return asset('storage/' . $this->hinh_anh);
-            }
+        // Nếu là URL đầy đủ (http/https)
+        if (str_starts_with($this->hinh_anh, 'http')) {
+            return $this->hinh_anh;
         }
-        
-        // Trả về URL trực tiếp
+        // Nếu là file local
         return asset('storage/' . $this->hinh_anh);
     }
-    return asset('images/no-image.png');
+    return 'https://via.placeholder.com/400x300/00BCD4/ffffff?text=HV+Pet';
 }
 
     public function scopeActive($q) { return $q->where('trang_thai', true); }

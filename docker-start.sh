@@ -21,8 +21,7 @@ LOG_CHANNEL=stderr
 FILESYSTEM_DISK=local
 EOF
 
+php artisan storage:link --force
 php artisan migrate --force
-php artisan db:seed --force
 echo "PORT variable is: $PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT
-php artisan storage:link --force

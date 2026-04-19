@@ -24,4 +24,5 @@ EOF
 echo "ENV OK - Starting migrate..."
 php artisan migrate --force
 echo "Starting server on port ${PORT}..."
-php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+echo "PORT variable is: $PORT"
+php artisan serve --host=0.0.0.0 --port=$PORT

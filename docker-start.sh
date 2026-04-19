@@ -19,15 +19,15 @@ CACHE_STORE=file
 QUEUE_CONNECTION=sync
 LOG_CHANNEL=stderr
 FILESYSTEM_DISK=local
+VNPAY_TMN_CODE=${VNPAY_TMN_CODE:-DEJE6R68}
+VNPAY_HASH_SECRET=${VNPAY_HASH_SECRET:-UGWZ7VQLQ44X9BGKHRI9ZZ0PVRPJLLBA}
+VNPAY_URL=${VNPAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+VNPAY_RETURN_URL=${VNPAY_RETURN_URL:-https://hvpetshop-production.up.railway.app/vnpay/return}
 EOF
 
-# Copy ảnh từ public/storage vào storage/app/public
 mkdir -p /app/storage/app/public/products
 cp -r /app/public/storage/products/. /app/storage/app/public/products/ 2>/dev/null || true
-
-# Tạo symlink
 php artisan storage:link --force 2>/dev/null || true
-
 php artisan migrate --force
 echo "Starting server on port $PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT

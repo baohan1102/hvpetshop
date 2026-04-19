@@ -1,16 +1,27 @@
 FROM php:8.2-cli
 
 WORKDIR /app
+
 COPY . .
 
-RUN apt-get update && apt-get install -y unzip git curl libzip-dev
-RUN docker-php-ext-install pdo pdo_mysql
+RUN apt-get update && apt-get install -y \
+    unzip \
+    git \
+    curl \
+    libzip-dev \
+    libpng-dev \
+    libxml2-dev \
+    && docker-php-ext-install pdo pdo_mysql zip gd xml
 
-RUN curl -sS https://getcomposer.org/installer | php
-RUN php composer.phar install
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer
+
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 RUN chmod -R 777 storage bootstrap/cache
 
-EXPOSE 8080
-
-CMD ["sh", "-c", "php -S 0.0.0.0:$PORT -t public"]
+CMD php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && php artisan migrate --force \
+    && php artisan serve --host=0.0.0.0 --port=$PORT

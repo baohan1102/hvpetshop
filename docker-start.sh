@@ -21,7 +21,13 @@ LOG_CHANNEL=stderr
 FILESYSTEM_DISK=local
 EOF
 
-php artisan storage:link --force
+# Copy ảnh từ public/storage vào storage/app/public
+mkdir -p /app/storage/app/public/products
+cp -r /app/public/storage/products/. /app/storage/app/public/products/ 2>/dev/null || true
+
+# Tạo symlink
+php artisan storage:link --force 2>/dev/null || true
+
 php artisan migrate --force
-echo "PORT variable is: $PORT"
+echo "Starting server on port $PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT

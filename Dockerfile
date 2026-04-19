@@ -15,18 +15,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 RUN chmod -R 777 storage bootstrap/cache
 
-# Xóa .env cũ để Railway Variables có thể hoạt động
-RUN rm -f .env bootstrap/cache/config.php bootstrap/cache/routes*.php
+RUN rm -f .env bootstrap/cache/config.php
 
-CMD php -r "
-\$vars = [
-    'APP_NAME' => getenv('APP_NAME') ?: 'HV Pet Shop',
-    'APP_ENV' => getenv('APP_ENV') ?: 'production',
-    'APP_KEY' => getenv('APP_KEY') ?: '',
-    'APP_DEBUG' => getenv('APP_DEBUG') ?: 'false',
-    'APP_URL' => getenv('APP_URL') ?: 'http://localhost',
-    'DB_CONNECTION' => getenv('DB_CONNECTION') ?: 'mysql',
-    'DB_HOST' => getenv('DB_HOST') ?: '127.0.0.1',
-    'DB_PORT' => getenv('DB_PORT') ?: '3306',
-    'DB_DATABASE' => getenv('DB_DATABASE') ?: '',
-    'DB_USERNAME'
+COPY docker-start.sh /docker-start.sh
+RUN chmod +x /docker-start.sh
+
+CMD ["/docker-start.sh"]

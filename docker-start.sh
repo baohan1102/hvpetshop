@@ -21,8 +21,7 @@ LOG_CHANNEL=stderr
 FILESYSTEM_DISK=local
 EOF
 
-echo "ENV OK - Starting migrate..."
 php artisan migrate --force
-echo "Starting server on port ${PORT}..."
+php artisan db:seed --force
 echo "PORT variable is: $PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT

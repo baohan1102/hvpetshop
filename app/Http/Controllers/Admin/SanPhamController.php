@@ -7,10 +7,39 @@ use App\Models\SanPham;
 use App\Models\DanhMuc;
 use App\Models\NhaCungCap;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 class SanPhamController extends Controller
 {
+    private function uploadToCloudinary($file)
+    {
+        $cloudName = env('CLOUDINARY_CLOUD_NAME', 'dvrclwek7');
+        $apiKey    = env('CLOUDINARY_API_KEY', '937683635992285');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+
+        $timestamp = time();
+        $params    = ['folder' => 'hvpetshop/products', 'timestamp' => $timestamp];
+        ksort($params);
+        $strToSign = http_build_query($params) . $apiSecret;
+        $signature = sha1($strToSign);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, [
+            'file'      => new \CURLFile($file->getRealPath(), $file->getMimeType(), $file->getClientOriginalName()),
+            'api_key'   => $apiKey,
+            'timestamp' => $timestamp,
+            'signature' => $signature,
+            'folder'    => 'hvpetshop/products',
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $result = json_decode($response, true);
+        return $result['secure_url'] ?? null;
+    }
+
     public function index(Request $request)
     {
         $query = SanPham::with(['danhMuc', 'nhaCungCap']);
@@ -24,7 +53,6 @@ class SanPhamController extends Controller
             $query->where('trang_thai', $request->trang_thai);
         }
 
-        // Hiện cả sản phẩm ẩn ở admin
         $sanPhams = $query->latest()->paginate(15)->appends($request->all());
         $danhMucs = DanhMuc::all();
         $nhaCungCaps = NhaCungCap::where('trang_thai', true)->get();
@@ -42,22 +70,21 @@ class SanPhamController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ten_sp'       => 'required',
-            'danh_muc_id'  => 'required|exists:danh_mucs,id',
-            'gia'          => 'required|numeric|min:0',
-            'so_luong'     => 'required|integer|min:0',
-            'hinh_anh'     => 'nullable|image|max:2048',
+            'ten_sp'      => 'required',
+            'danh_muc_id' => 'required|exists:danh_mucs,id',
+            'gia'         => 'required|numeric|min:0',
+            'so_luong'    => 'required|integer|min:0',
+            'hinh_anh'    => 'nullable|image|max:5120',
         ]);
 
-        $maSP = 'SP' . str_pad(SanPham::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $maSP    = 'SP' . str_pad(SanPham::max('id') + 1, 4, '0', STR_PAD_LEFT);
         $hinhAnh = null;
 
         if ($request->hasFile('hinh_anh')) {
-    $result = Cloudinary::upload($request->file('hinh_anh')->getRealPath(), [
-        'folder' => 'hvpetshop/products'
-    ]);
-    $hinhAnh = $result->getSecurePath();
-}
+            $url = $this->uploadToCloudinary($request->file('hinh_anh'));
+            if ($url) $hinhAnh = $url;
+        }
+
         SanPham::create([
             'ma_sp'           => $maSP,
             'danh_muc_id'     => $request->danh_muc_id,
@@ -78,8 +105,8 @@ class SanPhamController extends Controller
 
     public function edit($id)
     {
-        $sanPham = SanPham::findOrFail($id);
-        $danhMucs = DanhMuc::all();
+        $sanPham     = SanPham::findOrFail($id);
+        $danhMucs    = DanhMuc::all();
         $nhaCungCaps = NhaCungCap::where('trang_thai', true)->get();
         return view('admin.san-pham.edit', compact('sanPham', 'danhMucs', 'nhaCungCaps'));
     }
@@ -92,22 +119,17 @@ class SanPhamController extends Controller
             'danh_muc_id' => 'required|exists:danh_mucs,id',
             'gia'         => 'required|numeric|min:0',
             'so_luong'    => 'required|integer|min:0',
-            'hinh_anh'    => 'nullable|image|max:2048',
+            'hinh_anh'    => 'nullable|image|max:5120',
         ]);
 
         $data = $request->only(['ten_sp', 'danh_muc_id', 'nha_cung_cap_id', 'mo_ta', 'gia', 'so_luong', 'nguong_canh_bao']);
         $data['trang_thai'] = $request->boolean('trang_thai');
-        $data['la_moi'] = $request->boolean('la_moi');
-if ($request->hasFile('hinh_anh')) {
-    // Xóa ảnh cũ nếu có
-    if ($sanPham->hinh_anh && str_starts_with($sanPham->hinh_anh, 'http')) {
-        // Cloudinary tự quản lý
-    }
-    $result = Cloudinary::upload($request->file('hinh_anh')->getRealPath(), [
-        'folder' => 'hvpetshop/products'
-    ]);
-    $data['hinh_anh'] = $result->getSecurePath();
-}
+        $data['la_moi']     = $request->boolean('la_moi');
+
+        if ($request->hasFile('hinh_anh')) {
+            $url = $this->uploadToCloudinary($request->file('hinh_anh'));
+            if ($url) $data['hinh_anh'] = $url;
+        }
 
         $sanPham->update($data);
         return redirect()->route('admin.san-pham.index')->with('success', 'Cập nhật sản phẩm thành công!');

@@ -164,3 +164,35 @@ Route::get('/test-cloudinary', function() {
         'secret_len' => strlen($apiSecret ?? ''),
     ]);
 })->middleware('auth');
+Route::get('/test-cloudinary', function() {
+    $cloudName = env('CLOUDINARY_CLOUD_NAME');
+    $apiKey    = env('CLOUDINARY_API_KEY');
+    $apiSecret = env('CLOUDINARY_API_SECRET');
+
+    // Test upload ảnh từ URL
+    $timestamp = time();
+    $params    = ['folder' => 'hvpetshop/products', 'timestamp' => $timestamp];
+    ksort($params);
+    $strToSign = http_build_query($params) . $apiSecret;
+    $signature = sha1($strToSign);
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, [
+        'file'      => 'https://placehold.co/400x300/00BCD4/white?text=Test',
+        'api_key'   => $apiKey,
+        'timestamp' => $timestamp,
+        'signature' => $signature,
+        'folder'    => 'hvpetshop/products',
+    ]);
+    $response = curl_exec($ch);
+    $error    = curl_error($ch);
+    curl_close($ch);
+
+    return response()->json([
+        'curl_error' => $error,
+        'response'   => json_decode($response, true),
+    ]);
+})->middleware('auth');

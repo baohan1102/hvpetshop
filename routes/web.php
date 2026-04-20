@@ -18,9 +18,7 @@ use App\Http\Controllers\Admin\BaoCaoController;
 use App\Http\Controllers\Admin\KhachHangController;
 use App\Http\Controllers\VNPayController;
 // VNPAY
-Route::middleware('auth')->group(function () {
-    Route::get('/vnpay/payment/{donHangId}', [VNPayController::class, 'createPayment'])->name('vnpay.payment');
-});
+Route::middleware('auth')->get('/vnpay/payment/{donHangId}', [VNPayController::class, 'createPayment'])->name('vnpay.payment');
 Route::get('/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
 Route::post('/vnpay/ipn', [VNPayController::class, 'vnpayIPN'])->name('vnpay.ipn');
 // ============================
@@ -154,3 +152,15 @@ Route::get('/khuyen-mai/{id}', [KhuyenMaiController::class, 'show'])->name('khuy
     Route::get('/khach-hang', [KhachHangController::class, 'index'])->name('khach-hang.index');
     Route::get('/khach-hang/{id}', [KhachHangController::class, 'show'])->name('khach-hang.show');
 });
+Route::get('/test-cloudinary', function() {
+    $cloudName = env('CLOUDINARY_CLOUD_NAME');
+    $apiKey    = env('CLOUDINARY_API_KEY');
+    $apiSecret = env('CLOUDINARY_API_SECRET');
+    
+    return response()->json([
+        'cloud_name' => $cloudName,
+        'api_key'    => $apiKey,
+        'has_secret' => !empty($apiSecret),
+        'secret_len' => strlen($apiSecret ?? ''),
+    ]);
+})->middleware('auth');

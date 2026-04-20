@@ -153,27 +153,14 @@ Route::get('/khuyen-mai/{id}', [KhuyenMaiController::class, 'show'])->name('khuy
     Route::get('/khach-hang/{id}', [KhachHangController::class, 'show'])->name('khach-hang.show');
 });
 Route::get('/test-cloudinary', function() {
-    $cloudName = env('CLOUDINARY_CLOUD_NAME');
-    $apiKey    = env('CLOUDINARY_API_KEY');
-    $apiSecret = env('CLOUDINARY_API_SECRET');
-    
-    return response()->json([
-        'cloud_name' => $cloudName,
-        'api_key'    => $apiKey,
-        'has_secret' => !empty($apiSecret),
-        'secret_len' => strlen($apiSecret ?? ''),
-    ]);
-})->middleware('auth');
-Route::get('/test-cloudinary', function() {
-    $cloudName = env('CLOUDINARY_CLOUD_NAME');
-    $apiKey    = env('CLOUDINARY_API_KEY');
+    $cloudName = env('CLOUDINARY_CLOUD_NAME', 'dvrclwek7');
+    $apiKey    = env('CLOUDINARY_API_KEY', '937683635992285');
     $apiSecret = env('CLOUDINARY_API_SECRET');
 
-    // Test upload ảnh từ URL
     $timestamp = time();
-    $params    = ['folder' => 'hvpetshop/products', 'timestamp' => $timestamp];
-    ksort($params);
-    $strToSign = http_build_query($params) . $apiSecret;
+    
+    // Signature đúng chuẩn Cloudinary
+    $strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;
     $signature = sha1($strToSign);
 
     $ch = curl_init();
@@ -188,11 +175,11 @@ Route::get('/test-cloudinary', function() {
         'folder'    => 'hvpetshop/products',
     ]);
     $response = curl_exec($ch);
-    $error    = curl_error($ch);
     curl_close($ch);
 
     return response()->json([
-        'curl_error' => $error,
-        'response'   => json_decode($response, true),
+        'string_to_sign' => 'folder=hvpetshop/products&timestamp=' . $timestamp,
+        'signature'      => $signature,
+        'response'       => json_decode($response, true),
     ]);
-})->middleware('auth');
+});

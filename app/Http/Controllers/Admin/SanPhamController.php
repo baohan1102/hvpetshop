@@ -11,34 +11,36 @@ use Illuminate\Http\Request;
 class SanPhamController extends Controller
 {
     private function uploadToCloudinary($file)
-    {
-        $cloudName = env('CLOUDINARY_CLOUD_NAME', 'dvrclwek7');
-        $apiKey    = env('CLOUDINARY_API_KEY', '937683635992285');
-        $apiSecret = env('CLOUDINARY_API_SECRET');
+{
+    $cloudName = env('CLOUDINARY_CLOUD_NAME', 'dvrclwek7');
+    $apiKey    = env('CLOUDINARY_API_KEY', '937683635992285');
+    $apiSecret = env('CLOUDINARY_API_SECRET');
 
-        $timestamp = time();
-        $params    = ['folder' => 'hvpetshop/products', 'timestamp' => $timestamp];
-        ksort($params);
-        $strToSign = http_build_query($params) . $apiSecret;
-        $signature = sha1($strToSign);
+    $timestamp = time();
+    
+    // Cloudinary signature: key=value&key=value + api_secret (KHÔNG encode URL)
+    $strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;
+    $signature = sha1($strToSign);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'file'      => new \CURLFile($file->getRealPath(), $file->getMimeType(), $file->getClientOriginalName()),
-            'api_key'   => $apiKey,
-            'timestamp' => $timestamp,
-            'signature' => $signature,
-            'folder'    => 'hvpetshop/products',
-        ]);
-        $response = curl_exec($ch);
-        curl_close($ch);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, [
+        'file'      => new \CURLFile($file->getRealPath(), $file->getMimeType(), $file->getClientOriginalName()),
+        'api_key'   => $apiKey,
+        'timestamp' => $timestamp,
+        'signature' => $signature,
+        'folder'    => 'hvpetshop/products',
+    ]);
+    $response = curl_exec($ch);
+    curl_close($ch);
 
-        $result = json_decode($response, true);
-        return $result['secure_url'] ?? null;
-    }
+    \Log::info('Cloudinary response', ['response' => $response]);
+
+    $result = json_decode($response, true);
+    return $result['secure_url'] ?? null;
+}
 
     public function index(Request $request)
     {

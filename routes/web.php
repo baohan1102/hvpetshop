@@ -152,34 +152,3 @@ Route::get('/khuyen-mai/{id}', [KhuyenMaiController::class, 'show'])->name('khuy
     Route::get('/khach-hang', [KhachHangController::class, 'index'])->name('khach-hang.index');
     Route::get('/khach-hang/{id}', [KhachHangController::class, 'show'])->name('khach-hang.show');
 });
-Route::get('/test-cloudinary', function() {
-    $cloudName = env('CLOUDINARY_CLOUD_NAME', 'dvrclwek7');
-    $apiKey    = env('CLOUDINARY_API_KEY', '937683635992285');
-    $apiSecret = env('CLOUDINARY_API_SECRET');
-
-    $timestamp = time();
-    
-    // Signature đúng chuẩn Cloudinary
-    $strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;
-    $signature = sha1($strToSign);
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, [
-        'file'      => 'https://placehold.co/400x300/00BCD4/white?text=Test',
-        'api_key'   => $apiKey,
-        'timestamp' => $timestamp,
-        'signature' => $signature,
-        'folder'    => 'hvpetshop/products',
-    ]);
-    $response = curl_exec($ch);
-    curl_close($ch);
-
-    return response()->json([
-        'string_to_sign' => 'folder=hvpetshop/products&timestamp=' . $timestamp,
-        'signature'      => $signature,
-        'response'       => json_decode($response, true),
-    ]);
-});

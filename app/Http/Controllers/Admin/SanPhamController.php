@@ -97,10 +97,12 @@ class SanPhamController extends Controller
         $data['trang_thai'] = $request->boolean('trang_thai');
         $data['la_moi'] = $request->boolean('la_moi');
 
-        if ($request->hasFile('hinh_anh')) {
-            if ($sanPham->hinh_anh) \Storage::disk('public')->delete($sanPham->hinh_anh);
-            $data['hinh_anh'] = $request->file('hinh_anh')->store('products', 'public');
-        }
+       if ($request->hasFile('hinh_anh')) {
+    $result = cloudinary()->upload($request->file('hinh_anh')->getRealPath(), [
+        'folder' => 'hvpetshop/products'
+    ]);
+    $hinhAnh = $result->getSecurePath();
+}
 
         $sanPham->update($data);
         return redirect()->route('admin.san-pham.index')->with('success', 'Cập nhật sản phẩm thành công!');

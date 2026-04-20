@@ -23,18 +23,15 @@ VNPAY_TMN_CODE=${VNPAY_TMN_CODE:-DEJE6R68}
 VNPAY_HASH_SECRET=${VNPAY_HASH_SECRET:-UGWZ7VQLQ44X9BGKHRI9ZZ0PVRPJLLBA}
 VNPAY_URL=${VNPAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
 VNPAY_RETURN_URL=${VNPAY_RETURN_URL:-https://hvpetshop-production.up.railway.app/vnpay/return}
+CLOUDINARY_URL=${CLOUDINARY_URL}
+CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-dvrclwek7}
+CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-937683635992285}
+CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
 EOF
 
-# Xóa symlink cũ nếu có
-rm -rf /app/public/storage
-
-# Copy ảnh trực tiếp vào public/storage (không dùng symlink)
-mkdir -p /app/public/storage/products
-cp -r /app/storage/app/public/products/. /app/public/storage/products/ 2>/dev/null || true
-
-echo "Images copied:"
-ls /app/public/storage/products/ 2>/dev/null || echo "No images found"
-
+mkdir -p /app/storage/app/public/products
+cp -r /app/public/storage/products/. /app/storage/app/public/products/ 2>/dev/null || true
+php artisan storage:link --force 2>/dev/null || true
 php artisan migrate --force
 echo "Starting server on port $PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT

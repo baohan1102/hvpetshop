@@ -8,7 +8,7 @@ use App\Models\DanhMuc;
 use App\Models\NhaCungCap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 class SanPhamController extends Controller
 {
     public function index(Request $request)
@@ -53,9 +53,11 @@ class SanPhamController extends Controller
         $hinhAnh = null;
 
         if ($request->hasFile('hinh_anh')) {
-            $hinhAnh = $request->file('hinh_anh')->store('products', 'public');
-        }
-
+    $result = Cloudinary::upload($request->file('hinh_anh')->getRealPath(), [
+        'folder' => 'hvpetshop/products'
+    ]);
+    $hinhAnh = $result->getSecurePath();
+}
         SanPham::create([
             'ma_sp'           => $maSP,
             'danh_muc_id'     => $request->danh_muc_id,
@@ -96,12 +98,15 @@ class SanPhamController extends Controller
         $data = $request->only(['ten_sp', 'danh_muc_id', 'nha_cung_cap_id', 'mo_ta', 'gia', 'so_luong', 'nguong_canh_bao']);
         $data['trang_thai'] = $request->boolean('trang_thai');
         $data['la_moi'] = $request->boolean('la_moi');
-
-       if ($request->hasFile('hinh_anh')) {
-    $result = cloudinary()->upload($request->file('hinh_anh')->getRealPath(), [
+if ($request->hasFile('hinh_anh')) {
+    // Xóa ảnh cũ nếu có
+    if ($sanPham->hinh_anh && str_starts_with($sanPham->hinh_anh, 'http')) {
+        // Cloudinary tự quản lý
+    }
+    $result = Cloudinary::upload($request->file('hinh_anh')->getRealPath(), [
         'folder' => 'hvpetshop/products'
     ]);
-    $hinhAnh = $result->getSecurePath();
+    $data['hinh_anh'] = $result->getSecurePath();
 }
 
         $sanPham->update($data);

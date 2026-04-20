@@ -10,18 +10,39 @@
     <style>
         :root { --primary: #00BCD4; --sidebar-width: 250px; }
         body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
-        .sidebar { width: var(--sidebar-width); min-height: 100vh; background: #1a1a2e; position: fixed; top: 0; left: 0; z-index: 1000; transition: .3s; overflow-y: auto; }
-        .sidebar .brand { padding: 20px; border-bottom: 1px solid #ffffff20; }
-        .sidebar .nav-link { color: #adb5bd; padding: 10px 20px; border-radius: 8px; margin: 2px 10px; }
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #1a1a2e;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: .3s;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: #1a1a2e; }
+        .sidebar::-webkit-scrollbar-thumb { background: #ffffff30; border-radius: 2px; }
+        .sidebar .brand { padding: 20px; border-bottom: 1px solid #ffffff20; flex-shrink: 0; }
+        .sidebar .nav-link { color: #adb5bd; padding: 10px 20px; border-radius: 8px; margin: 2px 10px; display: flex; align-items: center; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: var(--primary); }
         .sidebar .nav-link i { width: 22px; }
         .sidebar .nav-section { color: #6c757d; font-size: 11px; text-transform: uppercase; padding: 12px 20px 4px; letter-spacing: 1px; }
+        .sidebar nav { flex: 1; overflow-y: auto; overflow-x: hidden; }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
         .topbar { background: #fff; padding: 12px 24px; box-shadow: 0 2px 4px rgba(0,0,0,.05); position: sticky; top: 0; z-index: 999; }
         .stat-card { border: none; border-radius: 16px; padding: 24px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
         .stat-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
         .table th { font-weight: 600; font-size: 13px; text-transform: uppercase; color: #6c757d; }
-        @media(max-width:768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } .sidebar.show { transform: translateX(0); } }
+        @media(max-width:768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .sidebar.show { transform: translateX(0); }
+        }
     </style>
     @stack('styles')
 </head>
@@ -53,7 +74,7 @@
         <a href="{{ route('admin.don-hang.index') }}" class="nav-link {{ request()->routeIs('admin.don-hang*') ? 'active' : '' }}">
             <i class="bi bi-bag me-2"></i>Đơn hàng
             @php $dh = \App\Models\DonHang::where('trang_thai','cho_xac_nhan')->count(); @endphp
-            @if($dh > 0)<span class="badge rounded-pill ms-auto" style="background:#f44336">{{ $dh }}</span>@endif
+            @if($dh > 0)<span class="badge rounded-pill ms-2" style="background:#f44336">{{ $dh }}</span>@endif
         </a>
         <a href="{{ route('admin.khuyen-mai.index') }}" class="nav-link {{ request()->routeIs('admin.khuyen-mai*') ? 'active' : '' }}">
             <i class="bi bi-tag me-2"></i>Khuyến mãi
@@ -79,10 +100,14 @@
         @endif
 
         <div class="nav-section">Tài khoản</div>
-        <a href="{{ route('home') }}" class="nav-link"><i class="bi bi-house me-2"></i>Trang chủ</a>
-        <form action="{{ route('logout') }}" method="POST" class="px-3 mt-2">
+        <a href="{{ route('home') }}" class="nav-link">
+            <i class="bi bi-house me-2"></i>Trang chủ
+        </a>
+        <form action="{{ route('logout') }}" method="POST" class="px-3 mt-2 mb-3">
             @csrf
-            <button class="btn btn-outline-light btn-sm w-100"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</button>
+            <button class="btn btn-outline-light btn-sm w-100">
+                <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+            </button>
         </form>
     </nav>
 </div>
@@ -96,9 +121,11 @@
             <h5 class="mb-0 fw-bold">@yield('page-title', 'Dashboard')</h5>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('don-hang.lich-su') }}" class="text-decoration-none position-relative">
+            <a href="{{ route('admin.don-hang.index') }}" class="text-decoration-none position-relative">
                 <i class="bi bi-bell fs-5 text-muted"></i>
-                @if($dh > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:9px">{{ $dh }}</span>@endif
+                @if(isset($dh) && $dh > 0)
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:9px">{{ $dh }}</span>
+                @endif
             </a>
             <div class="dropdown">
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
@@ -113,8 +140,15 @@
     </div>
 
     <div class="p-4">
-        @if(session('success'))<div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-        @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        @endif
+        @if($errors->any())
+        <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
         @yield('content')
     </div>
 </div>

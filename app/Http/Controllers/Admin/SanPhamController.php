@@ -149,4 +149,14 @@ $strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;  
         $sanPham = SanPham::with(['danhMuc', 'nhaCungCap', 'danhGias.user'])->findOrFail($id);
         return view('admin.san-pham.show', compact('sanPham'));
     }
+    public function destroy($id)
+{
+    $sanPham = SanPham::findOrFail($id);
+    
+    // Xóa ảnh trên Cloudinary nếu là URL Cloudinary
+    // (tự động quản lý)
+    
+    $sanPham->delete();
+    return back()->with('success', 'Đã xóa sản phẩm!');
+}
 }

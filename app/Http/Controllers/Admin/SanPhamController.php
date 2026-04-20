@@ -19,8 +19,7 @@ class SanPhamController extends Controller
     $timestamp = time();
     
     // Cloudinary signature: key=value&key=value + api_secret (KHÔNG encode URL)
-    $strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;
-    $signature = sha1($strToSign);
+$strToSign = 'folder=hvpetshop/products&timestamp=' . $timestamp . $apiSecret;    $signature = sha1($strToSign);
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://api.cloudinary.com/v1_1/{$cloudName}/image/upload");

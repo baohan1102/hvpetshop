@@ -91,15 +91,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Sản phẩm
- // Sản phẩm
-Route::get('/san-pham', [SanPhamController::class, 'index'])->name('admin.san-pham.index');
-Route::get('/san-pham/create', [SanPhamController::class, 'create'])->name('admin.san-pham.create');
-Route::post('/san-pham', [SanPhamController::class, 'store'])->name('admin.san-pham.store');
-Route::get('/san-pham/{id}', [SanPhamController::class, 'show'])->name('admin.san-pham.show');
-Route::get('/san-pham/{id}/edit', [SanPhamController::class, 'edit'])->name('admin.san-pham.edit');
-Route::put('/san-pham/{id}', [SanPhamController::class, 'update'])->name('admin.san-pham.update');
-Route::post('/san-pham/{id}/toggle', [SanPhamController::class, 'toggleTrangThai'])->name('admin.san-pham.toggle');
-Route::delete('/san-pham/{id}', [SanPhamController::class, 'destroy'])->name('admin.san-pham.destroy');
+  Route::get('/san-pham', [SanPhamController::class, 'index'])->name('san-pham.index');
+Route::get('/san-pham/create', [SanPhamController::class, 'create'])->name('san-pham.create');
+Route::post('/san-pham', [SanPhamController::class, 'store'])->name('san-pham.store');
+Route::get('/san-pham/{id}', [SanPhamController::class, 'show'])->name('san-pham.show');
+Route::get('/san-pham/{id}/edit', [SanPhamController::class, 'edit'])->name('san-pham.edit');
+Route::put('/san-pham/{id}', [SanPhamController::class, 'update'])->name('san-pham.update');
+
+Route::delete('/san-pham/{id}', [SanPhamController::class, 'destroy'])->name('san-pham.destroy');
+
+Route::post('/san-pham/{id}/toggle', [SanPhamController::class, 'toggleTrangThai'])->name('san-pham.toggle');
     // Danh mục
     Route::get('/danh-muc', [DanhMucController::class, 'index'])->name('danh-muc.index');
     Route::post('/danh-muc', [DanhMucController::class, 'store'])->name('danh-muc.store');
